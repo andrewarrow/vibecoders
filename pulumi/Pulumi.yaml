@@ -1,0 +1,8 @@
+name: aa
+runtime:
+  name: python
+description: Google Cloud Go
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: gcp-go
