@@ -21,6 +21,7 @@ const Layout = () => {
           
           <nav className="flex space-x-4">
             <a href="/faq" className="text-gray-300 hover:text-white px-3 py-2 rounded-md">FAQ</a>
+            <Link to="/forum" className="text-gray-300 hover:text-white px-3 py-2 rounded-md">Forum</Link>
             {!loading && (
               user ? (
                 <>

@@ -69,6 +69,14 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
+	
+	// Add DB to context
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			c.Set("db", db)
+			return next(c)
+		}
+	})
 
 	// Serve static files from embedded filesystem
 	staticFS, err := fs.Sub(staticContent, "static/dist")
@@ -99,6 +107,13 @@ func main() {
 	api.PUT("/projects/:id", handlers.UpdateProject(db))
 	api.DELETE("/projects/:id", handlers.DeleteProject(db))
 	api.GET("/users/:username/projects", handlers.GetUserPublicProjects(db))
+	
+	// Forum routes
+	api.GET("/forum", handlers.GetForumPostsHandler(db))
+	api.POST("/forum", handlers.CreateForumPostHandler(db))
+	api.GET("/forum/:id", handlers.GetForumPostHandler(db))
+	api.POST("/forum/:id/comments", handlers.CreateForumCommentHandler(db))
+	api.POST("/forum/:id/vote", handlers.VoteForumPostHandler(db))
 
 	// Admin API routes with admin middleware
 	adminMiddleware := handlers.IsAdmin(db)
@@ -145,6 +160,9 @@ func main() {
 	e.GET("/register", serveSPA)
 	e.GET("/profile", serveSPA)
 	e.GET("/users/:username", serveSPA)
+	e.GET("/forum", serveSPA)
+	e.GET("/forum/:id", serveSPA)
+	e.GET("/forum/new", serveSPA)
 	e.GET("/admin", serveSPA)
 	e.GET("/admin/*", serveSPA)
 

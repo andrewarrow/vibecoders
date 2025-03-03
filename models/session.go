@@ -40,3 +40,15 @@ func DeleteSession(db *sql.DB, token string) error {
 	_, err := db.Exec(query, token)
 	return err
 }
+
+func GetSessionByToken(db *sql.DB, token string) (*Session, error) {
+	query := `SELECT id, user_id, token FROM sessions WHERE token = ?`
+	
+	var session Session
+	err := db.QueryRow(query, token).Scan(&session.ID, &session.UserID, &session.Token)
+	if err != nil {
+		return nil, err
+	}
+	
+	return &session, nil
+}

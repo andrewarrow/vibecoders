@@ -9,6 +9,8 @@ export default defineConfig({
     outDir: resolve('./static/dist'),
     emptyOutDir: true,
     assetsInlineLimit: 0,
+    //minify: false, // Disable minification
+    //sourcemap: true,
   },
   publicDir: resolve('./static/public'),
   server: {

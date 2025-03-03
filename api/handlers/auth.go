@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"vibecoders/models"
@@ -218,4 +219,33 @@ func GetPublicUserByUsername(db *sql.DB) echo.HandlerFunc {
 		
 		return c.JSON(http.StatusOK, user)
 	}
+}
+
+// sessionFromContext retrieves the session from the context cookie
+func sessionFromContext(c echo.Context) (*models.Session, error) {
+	cookie, err := c.Cookie("session_token")
+	if err != nil {
+		return nil, err
+	}
+	
+	token := cookie.Value
+	
+	// Since we can't reliably get the DB from the context in all cases,
+	// let's use the GetUserIDByToken function instead
+	var session models.Session
+	
+	// Get the database from the handler closure
+	if db, ok := c.Get("db").(*sql.DB); ok {
+		userID, err := models.GetUserIDByToken(db, token)
+		if err != nil {
+			return nil, err
+		}
+		
+		session.UserID = userID
+		session.Token = token
+		return &session, nil
+	}
+	
+	// If we can't get the DB from context, return an error
+	return nil, fmt.Errorf("database not found in context")
 }
