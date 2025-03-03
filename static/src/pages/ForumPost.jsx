@@ -15,12 +15,13 @@ const ForumPostDetail = () => {
     // Convert string ID to number
     const postId = parseInt(id, 10);
     
-    if (!isNaN(postId)) {
+    // Only fetch if post doesn't exist or ID changed
+    if (!isNaN(postId) && (!currentPost || currentPost.id !== postId)) {
       fetchPost(postId);
-    } else {
+    } else if (isNaN(postId)) {
       navigate('/forum');
     }
-  }, [id, fetchPost, navigate]);
+  }, [id, fetchPost, navigate, currentPost]);
   
   const timeSince = (date) => {
     const seconds = Math.floor((new Date() - new Date(date)) / 1000);
@@ -44,7 +45,7 @@ const ForumPostDetail = () => {
   };
   
   const handleVote = () => {
-    if (!user) {
+    if (!user || !currentPost) {
       return;
     }
     

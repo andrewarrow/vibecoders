@@ -135,11 +135,24 @@ export const ForumProvider = ({ children }) => {
     }
   };
 
+  // Add debouncing for vote function
+  const [voteDebounce, setVoteDebounce] = useState({});
+  
   const votePost = async (postId) => {
     if (!user) {
       setError('You must be logged in to vote');
       return null;
     }
+    
+    // Prevent rapid repeated clicks on the same post
+    const now = Date.now();
+    if (voteDebounce[postId] && now - voteDebounce[postId] < 1000) {
+      console.log(`Vote for post ${postId} debounced`);
+      return null;
+    }
+    
+    // Update debounce timestamp
+    setVoteDebounce(prev => ({ ...prev, [postId]: now }));
     
     try {
       const response = await fetch(`/api/forum/${postId}/vote`, {
@@ -176,32 +189,17 @@ export const ForumProvider = ({ children }) => {
     setAllPosts([]); // Clear all posts when changing sort
   };
 
+  // Improved nextPage function with deduplication
   const nextPage = async () => {
+    if (loading) return; // Prevent multiple simultaneous requests
+    
     console.log(`Loading next page, current page: ${page}`);
     const nextPageNum = page + 1;
-    console.log(`New page will be: ${nextPageNum}`);
     setPage(nextPageNum);
-    
-    // Manually build the URL and fetch for debugging
-    const url = `/api/forum?sort=${sortBy}&page=${nextPageNum}&limit=20`;
-    console.log(`Fetching from URL: ${url}`);
     
     try {
       setLoading(true);
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error('Failed to fetch next page');
-      }
-      
-      const data = await response.json();
-      console.log(`Loaded ${data.length} posts for page ${nextPageNum}`);
-      
-      // Manually append posts
-      setPosts(currentPosts => {
-        const newPosts = [...currentPosts, ...(data || [])];
-        console.log(`Posts are now ${newPosts.length} (prev: ${currentPosts.length}, new: ${data.length})`);
-        return newPosts;
-      });
+      await fetchPosts(true, nextPageNum);
     } catch (err) {
       console.error('Error in nextPage:', err);
     } finally {
@@ -209,17 +207,13 @@ export const ForumProvider = ({ children }) => {
     }
   };
 
+  // Combined effect for initial fetch and sort changes
   useEffect(() => {
-    // Only fetch on sort changes, not page changes (we handle page changes manually)
+    // Only fetch on initial mount or sort changes
     if (page === 1) {
       fetchPosts();
     }
-  }, [sortBy]);
-  
-  // Initial fetch on mount
-  useEffect(() => {
-    fetchPosts();
-  }, []);
+  }, [sortBy, page === 1]);
 
   const value = {
     posts,

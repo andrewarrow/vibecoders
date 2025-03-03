@@ -31,6 +31,10 @@ const ForumPost = ({ post }) => {
   const handleVote = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    // Prevent voting if not logged in
+    if (!user) return;
+    
     votePost(post.id);
   };
   
