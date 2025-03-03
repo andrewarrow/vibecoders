@@ -20,7 +20,7 @@ const Layout = () => {
           <Link to="/" className="text-2xl font-bold text-purple-500">VibeCoders</Link>
           
           <nav className="flex space-x-4">
-            <Link to="/" className="text-gray-300 hover:text-white px-3 py-2 rounded-md">Home</Link>
+            <a href="/faq" className="text-gray-300 hover:text-white px-3 py-2 rounded-md">FAQ</a>
             {!loading && (
               user ? (
                 <>
