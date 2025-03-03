@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"embed"
+	"html/template"
+	"io"
 	"io/fs"
 	"log"
 	"net/http"
@@ -17,6 +19,19 @@ import (
 
 //go:embed static/dist
 var staticContent embed.FS
+
+//go:embed templates
+var templateContent embed.FS
+
+// Template renderer for Echo
+type TemplateRenderer struct {
+	templates *template.Template
+}
+
+// Render implements echo.Renderer interface
+func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+	return t.templates.ExecuteTemplate(w, name, data)
+}
 
 func main() {
 	// Initialize database connection
@@ -43,6 +58,12 @@ func main() {
 
 	// Initialize Echo
 	e := echo.New()
+
+	// Initialize templates
+	renderer := &TemplateRenderer{
+		templates: template.Must(template.ParseFS(templateContent, "templates/*.html")),
+	}
+	e.Renderer = renderer
 
 	// Middleware
 	e.Use(middleware.Logger())
@@ -98,6 +119,25 @@ func main() {
 
 		return c.Blob(http.StatusOK, "text/html", indexHTML)
 	}
+
+	// Template-based routes
+	e.GET("/faq", func(c echo.Context) error {
+		data := map[string]interface{}{
+			"Title":       "FAQ",
+			"Description": "Frequently Asked Questions about vibecoding and VibeCoders platform",
+			"Year":        "2025",
+		}
+		return c.Render(http.StatusOK, "faq.html", data)
+	})
+	
+	e.GET("/about", func(c echo.Context) error {
+		data := map[string]interface{}{
+			"Title":       "About",
+			"Description": "Learn about VibeCoders and our mission to transform software development",
+			"Year":        "2025",
+		}
+		return c.Render(http.StatusOK, "about.html", data)
+	})
 
 	// Serve SPA routes
 	e.GET("/", serveSPA)
