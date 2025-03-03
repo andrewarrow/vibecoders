@@ -10,7 +10,7 @@ export default defineConfig({
     emptyOutDir: true,
     assetsInlineLimit: 0,
   },
-  publicDir: resolve('./static/img'),
+  publicDir: resolve('./static/public'),
   server: {
     proxy: {
       '/api': 'http://localhost:3000',
