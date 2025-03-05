@@ -69,7 +69,7 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
-	
+
 	// Add DB to context
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -93,21 +93,21 @@ func main() {
 	api.GET("/homepage-users", handlers.GetHomepageUsers(db))
 	api.GET("/user", handlers.GetCurrentUser(db))
 	api.GET("/users/:username", handlers.GetPublicUserByUsername(db))
-	
+
 	// Prompt routes
 	api.GET("/prompts", handlers.GetUserPrompts(db))
 	api.POST("/prompts", handlers.CreatePrompt(db))
 	api.PUT("/prompts/:id", handlers.UpdatePrompt(db))
 	api.DELETE("/prompts/:id", handlers.DeletePrompt(db))
 	api.GET("/users/:username/prompts", handlers.GetUserPublicPrompts(db))
-	
+
 	// Project routes
 	api.GET("/projects", handlers.GetUserProjects(db))
 	api.POST("/projects", handlers.CreateProject(db))
 	api.PUT("/projects/:id", handlers.UpdateProject(db))
 	api.DELETE("/projects/:id", handlers.DeleteProject(db))
 	api.GET("/users/:username/projects", handlers.GetUserPublicProjects(db))
-	
+
 	// Forum routes
 	api.GET("/forum", handlers.GetForumPostsHandler(db))
 	api.POST("/forum", handlers.CreateForumPostHandler(db))
@@ -144,14 +144,14 @@ func main() {
 		}
 		return c.Render(http.StatusOK, "faq.html", data)
 	})
-	
-	e.GET("/about", func(c echo.Context) error {
+
+	e.GET("/apps", func(c echo.Context) error {
 		data := map[string]interface{}{
-			"Title":       "About",
-			"Description": "Learn about VibeCoders and our mission to transform software development",
+			"Title":       "Apps",
+			"Description": "Saas Apps Replaced By Vibing",
 			"Year":        "2025",
 		}
-		return c.Render(http.StatusOK, "about.html", data)
+		return c.Render(http.StatusOK, "apps.html", data)
 	})
 
 	// Serve SPA routes
