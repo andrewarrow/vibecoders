@@ -4,9 +4,11 @@
   "description": "Find software engineers that are very good at vibecoding",
   "main": "index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "vite & npm run dev:templates",
+    "build": "vite build && npm run build:templates",
     "serve": "vite preview",
+    "build:templates": "npx tailwindcss -i ./static/public/css/templates.css -o ./static/public/css/templates.min.css --minify",
+    "dev:templates": "npx tailwindcss -i ./static/public/css/templates.css -o ./static/public/css/templates.min.css --watch",
     "db:init": "./db/init_db.sh",
     "db:migrate": "flyway -configFiles=db/flyway.conf migrate",
     "db:clean": "flyway -configFiles=db/flyway.conf clean",

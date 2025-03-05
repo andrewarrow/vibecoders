@@ -7,46 +7,47 @@
   <meta name="description" content="{{ .Description }}">
   <link rel="icon" type="image/svg+xml" href="/assets/favicon-ZlYlfJhF.svg">
   <link rel="stylesheet" crossorigin="" href="/assets/index-BkAmcXmc.css">
+  <link rel="stylesheet" href="/css/templates.min.css">
   <link rel="stylesheet" crossorigin="" href="/css/helper.css">
   {{ block "head" . }}{{ end }}
 </head>
-<body>
-  <div class="min-h-screen flex flex-col">
-    <header class="bg-gray-800 py-4 px-4 sm:px-6">
-      <div class="max-w-6xl mx-auto flex justify-between items-center">
-        <a class="text-2xl font-bold text-purple-500" href="/">VibeCoders</a>
-        <nav class="flex space-x-4">
-          <a class="text-gray-300 hover:text-white px-3 py-2 rounded-md" href="/faq">FAQ</a>
-          <a class="text-gray-300 hover:text-white px-3 py-2 rounded-md" href="/login">Login</a>
-          <a class="text-gray-300 hover:text-white px-3 py-2 rounded-md" href="/login">Register</a>
+<body class="bg-gray-900 text-gray-100">
+  <div class="t-flex-container">
+    <header class="t-header">
+      <div class="t-header-content">
+        <a class="t-logo" href="/">VibeCoders</a>
+        <nav class="t-nav">
+          <a class="t-nav-link" href="/faq">FAQ</a>
+          <a class="t-nav-link" href="/login">Login</a>
+          <a class="t-nav-link" href="/login">Register</a>
         </nav>
       </div>
     </header>
 
-    <main class="flex-grow py-8 px-4 sm:px-6">
-      <div class="max-w-6xl mx-auto">
+    <main class="t-main">
+      <div class="t-container">
         {{ block "content" . }}{{ end }}
       </div>
     </main>
 
-    <footer class="bg-gray-800 py-6 px-4 sm:px-6">
-      <div class="max-w-6xl mx-auto">
-        <p class="text-center text-gray-400">&copy; {{ .Year }} VibeCoders. All rights reserved.</p>
-        <div class="flex justify-center space-x-12 mt-6">
-          <a href="https://aider.chat/" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center text-gray-400 hover:text-white">
-            <img src="/img/aider.png" alt="Aider" class="w-8 h-8 mb-2">
+    <footer class="t-footer">
+      <div class="t-footer-content">
+        <p class="t-copyright">&copy; {{ .Year }} VibeCoders. All rights reserved.</p>
+        <div class="t-tools">
+          <a href="https://aider.chat/" target="_blank" rel="noopener noreferrer" class="t-tool-link">
+            <img src="/img/aider.png" alt="Aider" class="t-tool-icon">
             <span>Aider</span>
           </a>
-          <a href="https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center text-gray-400 hover:text-white">
-            <img src="/img/claude.png" alt="Claude Code" class="w-8 h-8 mb-2">
+          <a href="https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview" target="_blank" rel="noopener noreferrer" class="t-tool-link">
+            <img src="/img/claude.png" alt="Claude Code" class="t-tool-icon">
             <span>Claude Code</span>
           </a>
-          <a href="https://www.cursor.com/" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center text-gray-400 hover:text-white">
-            <img src="/img/cursor.svg" alt="Cursor" class="w-8 h-8 mb-2">
+          <a href="https://www.cursor.com/" target="_blank" rel="noopener noreferrer" class="t-tool-link">
+            <img src="/img/cursor.svg" alt="Cursor" class="t-tool-icon">
             <span>Cursor</span>
           </a>
-          <a href="https://cline.bot/" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center text-gray-400 hover:text-white">
-            <img src="/img/cline.png" alt="Cline" class="w-8 h-8 mb-2">
+          <a href="https://cline.bot/" target="_blank" rel="noopener noreferrer" class="t-tool-link">
+            <img src="/img/cline.png" alt="Cline" class="t-tool-icon">
             <span>Cline</span>
           </a>
         </div>

@@ -1,0 +1,105 @@
+/* Custom Tailwind classes for templates */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Layout components */
+  .t-container {
+    @apply max-w-6xl mx-auto;
+  }
+  
+  .t-flex-container {
+    @apply min-h-screen flex flex-col;
+  }
+
+  /* Header components */
+  .t-header {
+    @apply bg-gray-800 py-4 px-4 sm:px-6;
+  }
+  
+  .t-header-content {
+    @apply max-w-6xl mx-auto flex justify-between items-center;
+  }
+  
+  .t-logo {
+    @apply text-2xl font-bold text-purple-500;
+  }
+  
+  .t-nav {
+    @apply flex space-x-4;
+  }
+  
+  .t-nav-link {
+    @apply text-gray-300 hover:text-white px-3 py-2 rounded-md;
+  }
+
+  /* Main content */
+  .t-main {
+    @apply flex-grow py-8 px-4 sm:px-6;
+  }
+  
+  /* Section components */
+  .t-section {
+    @apply mb-12;
+  }
+  
+  .t-section-header {
+    @apply text-center mb-12;
+  }
+  
+  .t-section-title {
+    @apply text-4xl font-bold text-purple-500 mb-4;
+  }
+  
+  .t-section-desc {
+    @apply text-xl text-gray-300 max-w-3xl mx-auto;
+  }
+
+  /* Card components */
+  .t-card {
+    @apply border border-gray-700 rounded-lg p-6 hover:bg-gray-800 transition;
+  }
+  
+  .t-card-title {
+    @apply text-xl font-semibold text-purple-400 mb-3;
+  }
+  
+  .t-card-content {
+    @apply text-gray-300;
+  }
+
+  /* Typography */
+  .t-link {
+    @apply text-blue-400 hover:underline;
+  }
+  
+  .t-list {
+    @apply list-disc pl-6 mt-3 space-y-1;
+  }
+
+  /* Footer components */
+  .t-footer {
+    @apply bg-gray-800 py-6 px-4 sm:px-6;
+  }
+  
+  .t-footer-content {
+    @apply max-w-6xl mx-auto;
+  }
+  
+  .t-copyright {
+    @apply text-center text-gray-400;
+  }
+  
+  .t-tools {
+    @apply flex justify-center space-x-12 mt-6;
+  }
+  
+  .t-tool-link {
+    @apply flex flex-col items-center text-gray-400 hover:text-white;
+  }
+  
+  .t-tool-icon {
+    @apply w-8 h-8 mb-2;
+  }
+}

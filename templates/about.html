@@ -1,42 +1,48 @@
 {{ template "layout.html" . }}
 
 {{ define "content" }}
-<section class="mb-12 text-center">
-  <h1 class="text-4xl font-bold text-purple-500 mb-4">About VibeCoders</h1>
-  <p class="text-xl text-gray-300 max-w-3xl mx-auto">Transforming software development through AI-enhanced coding</p>
+<section class="t-section-header">
+  <h1 class="t-section-title">About VibeCoders</h1>
+  <p class="t-section-desc">Transforming software development through AI-enhanced coding</p>
 </section>
 
-<section class="mb-12">
-  <div class="bg-gray-800 rounded-lg p-8 shadow-lg">
+<section class="t-section">
+  <div class="t-card mb-8">
     <h2 class="text-2xl font-bold text-purple-500 mb-4">Our Mission</h2>
-    <p class="text-gray-300 mb-6">
-      VibeCoders was founded with a simple mission: to connect organizations with software engineers who excel at leveraging AI tools for development. We believe that the future of coding lies in the synergy between human creativity and machine intelligence.
-    </p>
-    
-    <p class="text-gray-300">
-      As AI coding assistants become more sophisticated, we're witnessing a paradigm shift in how software is built. Vibecoders are at the forefront of this revolution, focusing on system design and architecture while delegating implementation details to AI partners.
-    </p>
+    <div class="t-card-content space-y-6">
+      <p>
+        VibeCoders was founded with a simple mission: to connect organizations with software engineers who excel at leveraging AI tools for development. We believe that the future of coding lies in the synergy between human creativity and machine intelligence.
+      </p>
+      
+      <p>
+        As AI coding assistants become more sophisticated, we're witnessing a paradigm shift in how software is built. Vibecoders are at the forefront of this revolution, focusing on system design and architecture while delegating implementation details to AI partners.
+      </p>
+    </div>
   </div>
   
-  <div class="bg-gray-800 rounded-lg p-8 shadow-lg mt-8">
+  <div class="t-card mb-8">
     <h2 class="text-2xl font-bold text-purple-500 mb-4">Our Story</h2>
-    <p class="text-gray-300 mb-6">
-      VibeCoders began in early 2024 when a group of developers noticed how dramatically their productivity increased when working with AI coding tools. Instead of spending hours on boilerplate code and debugging, they could focus on the creative aspects of software development.
-    </p>
-    
-    <p class="text-gray-300">
-      What started as a small community of like-minded engineers has grown into a platform connecting companies with developers who have mastered the art of vibecoding. Today, we're helping organizations build better software faster by matching them with engineers who embody this new approach to development.
-    </p>
+    <div class="t-card-content space-y-6">
+      <p>
+        VibeCoders began in early 2024 when a group of developers noticed how dramatically their productivity increased when working with AI coding tools. Instead of spending hours on boilerplate code and debugging, they could focus on the creative aspects of software development.
+      </p>
+      
+      <p>
+        What started as a small community of like-minded engineers has grown into a platform connecting companies with developers who have mastered the art of vibecoding. Today, we're helping organizations build better software faster by matching them with engineers who embody this new approach to development.
+      </p>
+    </div>
   </div>
   
-  <div class="bg-gray-800 rounded-lg p-8 shadow-lg mt-8">
+  <div class="t-card">
     <h2 class="text-2xl font-bold text-purple-500 mb-4">Join Us</h2>
-    <p class="text-gray-300 mb-6">
-      Whether you're a developer looking to enhance your AI coding skills or an organization seeking vibecoder talent, we invite you to join our community. Create an account today to start connecting with like-minded professionals and explore the future of software development.
-    </p>
-    
-    <div class="flex justify-center mt-6">
-      <a href="/register" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-md font-medium">Sign Up Today</a>
+    <div class="t-card-content space-y-6">
+      <p>
+        Whether you're a developer looking to enhance your AI coding skills or an organization seeking vibecoder talent, we invite you to join our community. Create an account today to start connecting with like-minded professionals and explore the future of software development.
+      </p>
+      
+      <div class="flex justify-center mt-6">
+        <a href="/register" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-md font-medium">Sign Up Today</a>
+      </div>
     </div>
   </div>
 </section>

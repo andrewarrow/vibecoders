@@ -1,5 +1,6 @@
 vibecoders.db
 .DS_Store
+static/public/css/templates.min.css
 dist
 node_modules
 package-lock.json

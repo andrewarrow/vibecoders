@@ -5,58 +5,59 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SaaS Apps Vibed Over</title>
-  <meta name="description" content="Frequently Asked Questions about vibecoding and VibeCoders platform">
+  <meta name="description" content="Popular SaaS apps recreated using vibecoding techniques">
   <link rel="icon" type="image/svg+xml" href="/assets/favicon-ZlYlfJhF.svg">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/templates.min.css">
 </head>
 <body class="bg-gray-900 text-gray-100">
-  <div class="min-h-screen flex flex-col">
-    <header class="bg-gray-800 py-4 px-4 sm:px-6">
-      <div class="max-w-6xl mx-auto flex justify-between items-center">
-        <a class="text-2xl font-bold text-purple-500" href="/">VibeCoders</a>
-        <nav class="flex space-x-4">
-          <a class="text-gray-300 hover:text-white px-3 py-2 rounded-md" href="/faq">FAQ</a>
+  <div class="t-flex-container">
+    <header class="t-header">
+      <div class="t-header-content">
+        <a class="t-logo" href="/">VibeCoders</a>
+        <nav class="t-nav">
+          <a class="t-nav-link" href="/faq">FAQ</a>
         </nav>
       </div>
     </header>
 
-    <main class="flex-grow py-8 px-4 sm:px-6">
-      <div class="max-w-6xl mx-auto">
+    <main class="t-main">
+      <div class="t-container">
         
-        <section class="mb-12 text-center">
-          <h1 class="text-4xl font-bold text-purple-500 mb-4">SaaS Apps Vibed Over</h1>
-          <p class="text-xl text-gray-300 max-w-3xl mx-auto">These are a collection of popular apps we've re-written from scratch via vibing.</p>
+        <section class="t-section-header">
+          <h1 class="t-section-title">SaaS Apps Vibed Over</h1>
+          <p class="t-section-desc">These are a collection of popular apps we've re-written from scratch via vibing.</p>
         </section>
-          {{if .User}}
-          <a href="/apps/book"> 
-          {{else}}
-          <a href="/login"> 
-          {{end}}
+        
+        {{if .User}}
+        <a href="/apps/book"> 
+        {{else}}
+        <a href="/login"> 
+        {{end}}
         <section class="flex items-center justify-center gap-4">
-            <img src="https://i.imgur.com/QsipM8h.png" class="w-20 rounded-lg" /> <span class="text-lg font-medium">Book</span>
+          <img src="https://i.imgur.com/QsipM8h.png" class="w-20 rounded-lg" /> <span class="text-lg font-medium">Book</span>
         </section>
-          </a>
+        </a>
       </div>
     </main>
 
-    <footer class="bg-gray-800 py-6 px-4 sm:px-6">
-      <div class="max-w-6xl mx-auto">
-        <p class="text-center text-gray-400">&copy; 2025 VibeCoders. All rights reserved.</p>
-        <div class="flex justify-center space-x-12 mt-6">
-          <a href="https://aider.chat/" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center text-gray-400 hover:text-white">
-            <img src="/img/aider.png" alt="Aider" class="w-8 h-8 mb-2">
+    <footer class="t-footer">
+      <div class="t-footer-content">
+        <p class="t-copyright">&copy; 2025 VibeCoders. All rights reserved.</p>
+        <div class="t-tools">
+          <a href="https://aider.chat/" target="_blank" rel="noopener noreferrer" class="t-tool-link">
+            <img src="/img/aider.png" alt="Aider" class="t-tool-icon">
             <span>Aider</span>
           </a>
-          <a href="https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center text-gray-400 hover:text-white">
-            <img src="/img/claude.png" alt="Claude Code" class="w-8 h-8 mb-2">
+          <a href="https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview" target="_blank" rel="noopener noreferrer" class="t-tool-link">
+            <img src="/img/claude.png" alt="Claude Code" class="t-tool-icon">
             <span>Claude Code</span>
           </a>
-          <a href="https://www.cursor.com/" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center text-gray-400 hover:text-white">
-            <img src="/img/cursor.svg" alt="Cursor" class="w-8 h-8 mb-2">
+          <a href="https://www.cursor.com/" target="_blank" rel="noopener noreferrer" class="t-tool-link">
+            <img src="/img/cursor.svg" alt="Cursor" class="t-tool-icon">
             <span>Cursor</span>
           </a>
-          <a href="https://cline.bot/" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center text-gray-400 hover:text-white">
-            <img src="/img/cline.png" alt="Cline" class="w-8 h-8 mb-2">
+          <a href="https://cline.bot/" target="_blank" rel="noopener noreferrer" class="t-tool-link">
+            <img src="/img/cline.png" alt="Cline" class="t-tool-icon">
             <span>Cline</span>
           </a>
         </div>
