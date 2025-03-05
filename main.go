@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"embed"
+	"fmt"
 	"html/template"
 	"io"
 	"io/fs"
@@ -11,6 +12,7 @@ import (
 	"os"
 
 	"vibecoders/api/handlers"
+	"vibecoders/models"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -150,7 +152,28 @@ func main() {
 			"Title":       "Apps",
 			"Description": "Saas Apps Replaced By Vibing",
 			"Year":        "2025",
+			"User":        nil,
 		}
+
+		// Check if user is logged in by looking for session cookie
+		cookie, err := c.Cookie("session_token")
+		fmt.Println(cookie, err)
+		if err == nil {
+			// Get the database from context
+			db := c.Get("db").(*sql.DB)
+
+			// Get user ID from session token
+			userID, err := models.GetUserIDByToken(db, cookie.Value)
+			if err == nil {
+				// Get user details
+				user, err := models.GetUserByID(db, userID)
+				if err == nil {
+					// Add user to template data
+					data["User"] = user
+				}
+			}
+		}
+
 		return c.Render(http.StatusOK, "apps.html", data)
 	})
 

@@ -16,8 +16,6 @@
         <a class="text-2xl font-bold text-purple-500" href="/">VibeCoders</a>
         <nav class="flex space-x-4">
           <a class="text-gray-300 hover:text-white px-3 py-2 rounded-md" href="/faq">FAQ</a>
-          <a class="text-gray-300 hover:text-white px-3 py-2 rounded-md" href="/login">Login</a>
-          <a class="text-gray-300 hover:text-white px-3 py-2 rounded-md" href="/login">Register</a>
         </nav>
       </div>
     </header>
@@ -29,7 +27,11 @@
           <h1 class="text-4xl font-bold text-purple-500 mb-4">SaaS Apps Vibed Over</h1>
           <p class="text-xl text-gray-300 max-w-3xl mx-auto">These are a collection of popular apps we've re-written from scratch via vibing.</p>
         </section>
+          {{if .User}}
           <a href="/apps/book"> 
+          {{else}}
+          <a href="/login"> 
+          {{end}}
         <section class="flex items-center justify-center gap-4">
             <img src="https://i.imgur.com/QsipM8h.png" class="w-20 rounded-lg" /> <span class="text-lg font-medium">Book</span>
         </section>
