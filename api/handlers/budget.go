@@ -9,8 +9,8 @@ import (
 )
 
 type UpdateCategoryRequest struct {
-	TransactionID int `json:"transaction_id"`
-	CategoryID    int `json:"category_id"`
+	TransactionID int  `json:"transaction_id"`
+	CategoryID    *int `json:"category_id"`
 }
 
 type NewCategoryRequest struct {
@@ -86,7 +86,14 @@ func UpdateTransactionCategory(db *sql.DB) echo.HandlerFunc {
 		}
 
 		// Update category
-		err = models.UpdateTransactionCategory(db, req.TransactionID, req.CategoryID, userID)
+		var categoryID int
+		if req.CategoryID == nil {
+			categoryID = -1 // Signal to set NULL in database
+		} else {
+			categoryID = *req.CategoryID
+		}
+		
+		err = models.UpdateTransactionCategory(db, req.TransactionID, categoryID, userID)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update category"})
 		}

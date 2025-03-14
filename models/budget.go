@@ -118,12 +118,26 @@ func GetBudgetTransactions(db *sql.DB, userID int) ([]BudgetTransaction, error) 
 }
 
 // UpdateTransactionCategory updates the category for a transaction
+// If categoryID is -1, it will set the category to NULL (removing the category)
 func UpdateTransactionCategory(db *sql.DB, transactionID, categoryID int, userID int) error {
 	// Verify the transaction belongs to the user before updating
-	query := `UPDATE budget_transactions 
+	var query string
+	var args []interface{}
+	
+	if categoryID == -1 {
+		// Remove category (set to NULL)
+		query = `UPDATE budget_transactions 
+              SET category_id = NULL 
+              WHERE id = ? AND user_id = ?`
+		args = []interface{}{transactionID, userID}
+	} else {
+		// Update to specific category
+		query = `UPDATE budget_transactions 
               SET category_id = ? 
               WHERE id = ? AND user_id = ?`
+		args = []interface{}{categoryID, transactionID, userID}
+	}
 
-	_, err := db.Exec(query, categoryID, transactionID, userID)
+	_, err := db.Exec(query, args...)
 	return err
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import Select from 'react-select';
 
 const Budget = () => {
   const { user, loading } = useAuth();
@@ -8,6 +9,7 @@ const Budget = () => {
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [categoryOptions, setCategoryOptions] = useState([]); // Options formatted for react-select
   const [newCategory, setNewCategory] = useState('');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [error, setError] = useState('');
@@ -27,6 +29,10 @@ const Budget = () => {
       fetchCategories();
     }
   }, [isAuthenticated]);
+  
+  // Remove any lingering code from the old typeahead implementation
+  
+  // No extra effect needed since we handle initialization in fetchTransactions
 
   const fetchTransactions = async () => {
     try {
@@ -36,6 +42,8 @@ const Budget = () => {
       
       if (response.ok) {
         const data = await response.json();
+        
+        // Update transactions state
         setTransactions(data);
       } else {
         setError('Failed to fetch transactions');
@@ -55,6 +63,13 @@ const Budget = () => {
       if (response.ok) {
         const data = await response.json();
         setCategories(data);
+        
+        // Format categories for react-select
+        const options = data.map(category => ({
+          value: category.id,
+          label: category.name
+        }));
+        setCategoryOptions(options);
       } else {
         setError('Failed to fetch categories');
       }
@@ -64,8 +79,31 @@ const Budget = () => {
     }
   };
 
-  const handleCategoryChange = async (transactionId, categoryId) => {
+  const handleCategoryChange = async (transactionId, selectedOption) => {
+    // Find the transaction to update
+    const transaction = transactions.find(t => t.id === transactionId);
+    if (!transaction) return;
+    
+    // Extract the categoryId and categoryName from the selected option
+    const categoryId = selectedOption ? selectedOption.value : null;
+    const categoryName = selectedOption ? selectedOption.label : '';
+    
+    // Create updated transaction object for optimistic updates
+    const updatedTransaction = { 
+      ...transaction, 
+      category_id: categoryId,
+      category_name: categoryName
+    };
+    
+    // Update the UI optimistically
+    setTransactions(prevTransactions => 
+      prevTransactions.map(t => 
+        t.id === transactionId ? updatedTransaction : t
+      )
+    );
+    
     try {
+      // Send request to backend
       const response = await fetch('/api/budget/transactions/category', {
         method: 'PUT',
         headers: {
@@ -78,26 +116,23 @@ const Budget = () => {
         }),
       });
       
-      if (response.ok) {
-        // Update the transaction in the UI
+      if (!response.ok) {
+        // Revert the optimistic update if there's an error
         setTransactions(prevTransactions => 
           prevTransactions.map(t => 
-            t.id === transactionId 
-              ? { 
-                  ...t, 
-                  category_id: categoryId,
-                  category_name: categories.find(c => c.id === categoryId)?.name || ''
-                } 
-              : t
+            t.id === transactionId ? transaction : t
           )
         );
-        setSuccess('Category updated successfully');
-        setTimeout(() => setSuccess(''), 3000);
-      } else {
         setError('Failed to update category');
         setTimeout(() => setError(''), 3000);
       }
     } catch (err) {
+      // Revert the optimistic update
+      setTransactions(prevTransactions => 
+        prevTransactions.map(t => 
+          t.id === transactionId ? transaction : t
+        )
+      );
       setError('An error occurred while updating category');
       console.error(err);
       setTimeout(() => setError(''), 3000);
@@ -126,7 +161,15 @@ const Budget = () => {
       
       if (response.ok) {
         const newCat = await response.json();
+        // Update categories list
         setCategories([...categories, newCat]);
+        
+        // Update react-select options
+        setCategoryOptions([
+          ...categoryOptions, 
+          { value: newCat.id, label: newCat.name }
+        ]);
+        
         setNewCategory('');
         setIsAddingCategory(false);
         setSuccess('Category added successfully');
@@ -226,7 +269,7 @@ const Budget = () => {
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {transactions.map((transaction) => (
-                <tr key={transaction.id}>
+                <tr key={transaction.id} data-transaction-id={transaction.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                     {formatDate(transaction.date)}
                   </td>
@@ -237,24 +280,70 @@ const Budget = () => {
                     {transaction.description}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="relative">
-                      <input
-                        list={`categories-${transaction.id}`}
-                        className="border rounded px-3 py-1 w-full text-sm focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        placeholder="Select category"
-                        value={transaction.category_name || ''}
-                        onChange={(e) => {
-                          const selectedCategory = categories.find(c => c.name === e.target.value);
-                          if (selectedCategory) {
-                            handleCategoryChange(transaction.id, selectedCategory.id);
+                    <div className="flex items-center w-full">
+                      <div className="w-full">
+                        <Select
+                          className="text-sm"
+                          classNamePrefix="react-select"
+                          options={categoryOptions}
+                          isClearable={true}
+                          placeholder="Select category"
+                          value={transaction.category_id
+                            ? { value: transaction.category_id, label: transaction.category_name }
+                            : null
                           }
-                        }}
-                      />
-                      <datalist id={`categories-${transaction.id}`}>
-                        {categories.map((category) => (
-                          <option key={category.id} value={category.name} />
-                        ))}
-                      </datalist>
+                          onChange={(selectedOption) => {
+                            handleCategoryChange(transaction.id, selectedOption);
+                          }}
+                          // Custom styling to match Tailwind design
+                          styles={{
+                            control: (base) => ({
+                              ...base,
+                              borderColor: 'rgb(209, 213, 219)',
+                              minHeight: '32px',
+                              backgroundColor: document.documentElement.classList.contains('dark') 
+                                ? 'rgb(55, 65, 81)' // dark:bg-gray-700
+                                : 'white',
+                            }),
+                            placeholder: (base) => ({
+                              ...base,
+                              color: document.documentElement.classList.contains('dark') 
+                                ? 'rgba(255, 255, 255, 0.5)' 
+                                : 'rgb(156, 163, 175)', // text-gray-400
+                            }),
+                            input: (base) => ({
+                              ...base,
+                              color: document.documentElement.classList.contains('dark') 
+                                ? 'white' 
+                                : 'inherit',
+                            }),
+                            singleValue: (base) => ({
+                              ...base,
+                              color: document.documentElement.classList.contains('dark') 
+                                ? 'white' 
+                                : 'inherit',
+                            }),
+                            menu: (base) => ({
+                              ...base,
+                              backgroundColor: document.documentElement.classList.contains('dark') 
+                                ? 'rgb(31, 41, 55)' // dark:bg-gray-800
+                                : 'white',
+                              zIndex: 50,
+                            }),
+                            option: (base, state) => ({
+                              ...base,
+                              backgroundColor: state.isFocused
+                                ? document.documentElement.classList.contains('dark') 
+                                  ? 'rgb(30, 58, 138)' // dark:bg-blue-900
+                                  : 'rgb(239, 246, 255)' // bg-blue-50
+                                : 'transparent',
+                              color: document.documentElement.classList.contains('dark') 
+                                ? 'white' 
+                                : 'black',
+                            }),
+                          }}
+                        />
+                      </div>
                     </div>
                   </td>
                 </tr>
