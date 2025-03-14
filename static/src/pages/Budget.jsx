@@ -55,11 +55,11 @@ const Budget = () => {
         // Set all transactions
         setTransactions(data);
         
-        // Extract unique dates from transactions and sort them
-        const uniqueDates = [...new Set(data.map(t => t.date))].sort();
+        // Extract unique dates from transactions and sort them in reverse order (newest first)
+        const uniqueDates = [...new Set(data.map(t => t.date))].sort().reverse();
         setAvailableDates(uniqueDates);
         
-        // If no currentDate is set or it's not in the available dates, use the latest date
+        // If no currentDate is set or it's not in the available dates, use the most recent date
         if (!currentDate || !uniqueDates.includes(currentDate)) {
           setCurrentDate(uniqueDates.length > 0 ? uniqueDates[0] : null);
         }
@@ -220,19 +220,19 @@ const Budget = () => {
     return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   };
   
-  // Navigate to previous day
+  // Navigate to previous (older) day
   const goToPreviousDay = () => {
-    const currentIndex = availableDates.findIndex(date => date === currentDate);
-    if (currentIndex > 0) {
-      setCurrentDate(availableDates[currentIndex - 1]);
-    }
-  };
-  
-  // Navigate to next day
-  const goToNextDay = () => {
     const currentIndex = availableDates.findIndex(date => date === currentDate);
     if (currentIndex < availableDates.length - 1) {
       setCurrentDate(availableDates[currentIndex + 1]);
+    }
+  };
+  
+  // Navigate to next (newer) day
+  const goToNextDay = () => {
+    const currentIndex = availableDates.findIndex(date => date === currentDate);
+    if (currentIndex > 0) {
+      setCurrentDate(availableDates[currentIndex - 1]);
     }
   };
   
@@ -322,8 +322,8 @@ const Budget = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-center text-purple-600">Budget Tracker</h1>
+    <div className="container mx-auto px-4 py-4 md:py-8">
+      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-8 text-center text-purple-600">Budget Tracker</h1>
       
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -339,10 +339,10 @@ const Budget = () => {
       
       {/* Import Modal */}
       {showImportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-xl p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-xl p-4 md:p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Add Day Data</h3>
+              <h3 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white">Add Day Data</h3>
               <button 
                 className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
                 onClick={() => setShowImportModal(false)}
@@ -356,10 +356,10 @@ const Budget = () => {
             <div className="mb-4">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                 Paste transaction data in the format:<br/>
-                <code className="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded">MM/DD/YYYY -amount Description</code>
+                <code className="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded text-xs md:text-sm">MM/DD/YYYY -amount Description</code>
               </p>
               <textarea
-                className="w-full h-64 border rounded p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="w-full h-48 md:h-64 border rounded p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 placeholder="03/10/2025 -577.76 Irs&#10;03/10/2025 -1.25 City Of Santa Moni&#10;..."
                 value={importData}
                 onChange={(e) => setImportData(e.target.value)}
@@ -369,14 +369,14 @@ const Budget = () => {
             
             <div className="flex justify-end">
               <button
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm mr-2"
+                className="bg-gray-300 text-gray-700 px-3 py-2 rounded text-sm mr-2"
                 onClick={() => setShowImportModal(false)}
                 disabled={isImporting}
               >
                 Cancel
               </button>
               <button
-                className="bg-blue-500 text-white px-4 py-2 rounded text-sm"
+                className="bg-blue-500 text-white px-3 py-2 rounded text-sm"
                 onClick={handleImport}
                 disabled={isImporting}
               >
@@ -388,74 +388,77 @@ const Budget = () => {
       )}
       
       <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden mb-6">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <div className="flex items-center">
+        {/* Header Section - Mobile responsive with stacked elements */}
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
+          <div className="flex flex-col md:flex-row md:items-center space-y-3 md:space-y-0">
             <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Transactions</h2>
             {currentDate && (
-              <div className="ml-4 flex items-center">
+              <div className="mt-2 md:mt-0 md:ml-4 flex items-center">
                 <button 
                   onClick={goToPreviousDay}
-                  disabled={availableDates.indexOf(currentDate) <= 0}
+                  disabled={availableDates.indexOf(currentDate) >= availableDates.length - 1}
                   className={`px-2 py-1 rounded text-sm mr-2 ${
-                    availableDates.indexOf(currentDate) <= 0
+                    availableDates.indexOf(currentDate) >= availableDates.length - 1
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-blue-500 text-white hover:bg-blue-600'
                   }`}
                 >
-                  ← Previous Day
+                  ← Older
                 </button>
                 <span className="text-sm font-medium px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">
                   {formatDate(currentDate)}
                 </span>
                 <button 
                   onClick={goToNextDay}
-                  disabled={availableDates.indexOf(currentDate) >= availableDates.length - 1}
+                  disabled={availableDates.indexOf(currentDate) <= 0}
                   className={`px-2 py-1 rounded text-sm ml-2 ${
-                    availableDates.indexOf(currentDate) >= availableDates.length - 1
+                    availableDates.indexOf(currentDate) <= 0
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-blue-500 text-white hover:bg-blue-600'
                   }`}
                 >
-                  Next Day →
+                  Newer →
                 </button>
               </div>
             )}
           </div>
           
-          <div className="flex items-center">
+          <div className="flex flex-wrap items-center gap-2">
             <button 
-              className="bg-green-500 text-white px-4 py-2 rounded text-sm mr-3"
+              className="bg-green-500 text-white px-3 py-2 rounded text-sm"
               onClick={() => setShowImportModal(true)}
             >
               Add Day Data
             </button>
             
             {isAddingCategory ? (
-              <form onSubmit={handleAddCategory} className="flex items-center">
+              <form onSubmit={handleAddCategory} className="flex flex-wrap items-center gap-2">
                 <input
                   type="text"
-                  className="border rounded-l px-3 py-2 text-sm focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="border rounded-l px-3 py-2 text-sm flex-grow min-w-[150px] focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   placeholder="New category name"
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
                 />
-                <button 
-                  type="submit"
-                  className="bg-green-500 text-white px-3 py-2 text-sm rounded-r"
-                >
-                  Add
-                </button>
-                <button 
-                  type="button"
-                  className="bg-gray-300 text-gray-700 px-3 py-2 text-sm rounded ml-2"
-                  onClick={() => setIsAddingCategory(false)}
-                >
-                  Cancel
-                </button>
+                <div className="flex">
+                  <button 
+                    type="submit"
+                    className="bg-green-500 text-white px-3 py-2 text-sm rounded-l"
+                  >
+                    Add
+                  </button>
+                  <button 
+                    type="button"
+                    className="bg-gray-300 text-gray-700 px-3 py-2 text-sm rounded-r"
+                    onClick={() => setIsAddingCategory(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </form>
             ) : (
               <button 
-                className="bg-purple-500 text-white px-4 py-2 rounded text-sm"
+                className="bg-purple-500 text-white px-3 py-2 rounded text-sm"
                 onClick={() => setIsAddingCategory(true)}
               >
                 New Category
@@ -464,7 +467,93 @@ const Budget = () => {
           </div>
         </div>
         
-        <div className="overflow-x-auto">
+        {/* Mobile Card View (visible on small screens) */}
+        <div className="md:hidden">
+          {currentDayTransactions.length === 0 ? (
+            <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
+              No transactions found for {formatDate(currentDate)}
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              {currentDayTransactions.map((transaction) => (
+                <div key={transaction.id} className="p-4 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500 dark:text-gray-300">{formatDate(transaction.date)}</span>
+                    <span className={`text-sm font-medium ${transaction.amount < 0 ? 'text-red-500' : 'text-green-500'}`}>
+                      ${transaction.amount.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-700 dark:text-gray-200 font-medium">{transaction.description}</div>
+                  <div className="pt-2">
+                    <Select
+                      className="text-sm"
+                      classNamePrefix="react-select"
+                      options={categoryOptions}
+                      isClearable={true}
+                      placeholder="Select category"
+                      value={transaction.category_id
+                        ? { value: transaction.category_id, label: transaction.category_name }
+                        : null
+                      }
+                      onChange={(selectedOption) => {
+                        handleCategoryChange(transaction.id, selectedOption);
+                      }}
+                      styles={{
+                        control: (base) => ({
+                          ...base,
+                          borderColor: 'rgb(209, 213, 219)',
+                          minHeight: '32px',
+                          backgroundColor: document.documentElement.classList.contains('dark') 
+                            ? 'rgb(55, 65, 81)' 
+                            : 'white',
+                        }),
+                        placeholder: (base) => ({
+                          ...base,
+                          color: document.documentElement.classList.contains('dark') 
+                            ? 'rgba(255, 255, 255, 0.5)' 
+                            : 'rgb(156, 163, 175)',
+                        }),
+                        input: (base) => ({
+                          ...base,
+                          color: document.documentElement.classList.contains('dark') 
+                            ? 'white' 
+                            : 'inherit',
+                        }),
+                        singleValue: (base) => ({
+                          ...base,
+                          color: document.documentElement.classList.contains('dark') 
+                            ? 'white' 
+                            : 'inherit',
+                        }),
+                        menu: (base) => ({
+                          ...base,
+                          backgroundColor: document.documentElement.classList.contains('dark') 
+                            ? 'rgb(31, 41, 55)' 
+                            : 'white',
+                          zIndex: 50,
+                        }),
+                        option: (base, state) => ({
+                          ...base,
+                          backgroundColor: state.isFocused
+                            ? document.documentElement.classList.contains('dark') 
+                              ? 'rgb(30, 58, 138)' 
+                              : 'rgb(239, 246, 255)' 
+                            : 'transparent',
+                          color: document.documentElement.classList.contains('dark') 
+                            ? 'white' 
+                            : 'black',
+                        }),
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* Desktop Table View (visible on medium screens and up) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
@@ -502,21 +591,20 @@ const Budget = () => {
                           onChange={(selectedOption) => {
                             handleCategoryChange(transaction.id, selectedOption);
                           }}
-                          // Custom styling to match Tailwind design
                           styles={{
                             control: (base) => ({
                               ...base,
                               borderColor: 'rgb(209, 213, 219)',
                               minHeight: '32px',
                               backgroundColor: document.documentElement.classList.contains('dark') 
-                                ? 'rgb(55, 65, 81)' // dark:bg-gray-700
+                                ? 'rgb(55, 65, 81)' 
                                 : 'white',
                             }),
                             placeholder: (base) => ({
                               ...base,
                               color: document.documentElement.classList.contains('dark') 
                                 ? 'rgba(255, 255, 255, 0.5)' 
-                                : 'rgb(156, 163, 175)', // text-gray-400
+                                : 'rgb(156, 163, 175)',
                             }),
                             input: (base) => ({
                               ...base,
@@ -533,7 +621,7 @@ const Budget = () => {
                             menu: (base) => ({
                               ...base,
                               backgroundColor: document.documentElement.classList.contains('dark') 
-                                ? 'rgb(31, 41, 55)' // dark:bg-gray-800
+                                ? 'rgb(31, 41, 55)' 
                                 : 'white',
                               zIndex: 50,
                             }),
@@ -541,8 +629,8 @@ const Budget = () => {
                               ...base,
                               backgroundColor: state.isFocused
                                 ? document.documentElement.classList.contains('dark') 
-                                  ? 'rgb(30, 58, 138)' // dark:bg-blue-900
-                                  : 'rgb(239, 246, 255)' // bg-blue-50
+                                  ? 'rgb(30, 58, 138)' 
+                                  : 'rgb(239, 246, 255)' 
                                 : 'transparent',
                               color: document.documentElement.classList.contains('dark') 
                                 ? 'white' 
