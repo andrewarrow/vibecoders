@@ -127,6 +127,7 @@ func main() {
 	api.GET("/budget/transactions", handlers.GetBudgetTransactions(db))
 	api.GET("/budget/categories", handlers.GetBudgetCategories(db))
 	api.POST("/budget/categories", handlers.CreateBudgetCategory(db))
+	api.PUT("/budget/categories/edit", handlers.EditBudgetCategory(db))
 	api.PUT("/budget/transactions/category", handlers.UpdateTransactionCategory(db))
 	api.POST("/budget/transactions/bulk", handlers.BulkImportTransactions(db))
 

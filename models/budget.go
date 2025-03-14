@@ -75,6 +75,31 @@ func CreateBudgetCategory(db *sql.DB, userID int, name string) (int, error) {
 	return int(id), nil
 }
 
+// UpdateBudgetCategory updates an existing category
+func UpdateBudgetCategory(db *sql.DB, categoryID, userID int, name string) error {
+	// Verify the category belongs to the user before updating
+	query := `UPDATE budget_categories 
+            SET name = ? 
+            WHERE id = ? AND user_id = ?`
+
+	result, err := db.Exec(query, name, categoryID, userID)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		// Category doesn't exist or doesn't belong to user
+		return sql.ErrNoRows
+	}
+
+	return nil
+}
+
 // GetBudgetTransactions returns all transactions for a user
 func GetBudgetTransactions(db *sql.DB, userID int) ([]BudgetTransaction, error) {
 	query := `SELECT t.id, t.user_id, t.date, t.amount, t.description, t.category_id, t.created_at, c.name

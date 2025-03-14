@@ -12,6 +12,8 @@ const Budget = () => {
   const [categoryOptions, setCategoryOptions] = useState([]); // Options formatted for react-select
   const [newCategory, setNewCategory] = useState('');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
@@ -203,6 +205,70 @@ const Budget = () => {
       setTimeout(() => setError(''), 3000);
     }
   };
+  
+  const handleEditCategory = async (e) => {
+    e.preventDefault();
+    if (!editingCategory || !editingCategory.name.trim()) {
+      setError('Category name cannot be empty');
+      setTimeout(() => setError(''), 3000);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/budget/categories/edit', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          category_id: editingCategory.id,
+          name: editingCategory.name.trim()
+        }),
+      });
+      
+      if (response.ok) {
+        const updatedCategory = await response.json();
+        
+        // Update categories list
+        setCategories(categories.map(cat => 
+          cat.id === updatedCategory.id ? updatedCategory : cat
+        ));
+        
+        // Update react-select options
+        setCategoryOptions(categoryOptions.map(option => 
+          option.value === updatedCategory.id 
+            ? { value: updatedCategory.id, label: updatedCategory.name } 
+            : option
+        ));
+        
+        // Update any transactions using this category
+        setTransactions(transactions.map(transaction => 
+          transaction.category_id === updatedCategory.id 
+            ? { ...transaction, category_name: updatedCategory.name } 
+            : transaction
+        ));
+        
+        setEditingCategory(null);
+        setShowCategoryModal(false);
+        setSuccess('Category updated successfully');
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        const errData = await response.json();
+        setError(errData.error || 'Failed to update category');
+        setTimeout(() => setError(''), 3000);
+      }
+    } catch (err) {
+      setError('An error occurred while updating category');
+      console.error(err);
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+  
+  const openEditCategoryModal = (category) => {
+    setEditingCategory({ ...category });
+    setShowCategoryModal(true);
+  };
 
   // Format date from YYYY-MM-DD to MM/DD/YYYY
   const formatDate = (dateStr) => {
@@ -337,6 +403,56 @@ const Budget = () => {
         </div>
       )}
       
+      {/* Category Edit Modal */}
+      {showCategoryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-4 md:p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white">Edit Category</h3>
+              <button 
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+                onClick={() => setShowCategoryModal(false)}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            
+            <form onSubmit={handleEditCategory}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Category Name
+                </label>
+                <input
+                  type="text"
+                  className="w-full border rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="Category name"
+                  value={editingCategory?.name || ''}
+                  onChange={(e) => setEditingCategory({...editingCategory, name: e.target.value})}
+                />
+              </div>
+              
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  className="bg-gray-300 text-gray-700 px-3 py-2 rounded text-sm mr-2"
+                  onClick={() => setShowCategoryModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white px-3 py-2 rounded text-sm"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      
       {/* Import Modal */}
       {showImportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
@@ -387,6 +503,7 @@ const Budget = () => {
         </div>
       )}
       
+
       <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden mb-6">
         {/* Header Section - Mobile responsive with stacked elements */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
@@ -430,40 +547,6 @@ const Budget = () => {
             >
               Add Day Data
             </button>
-            
-            {isAddingCategory ? (
-              <form onSubmit={handleAddCategory} className="flex flex-wrap items-center gap-2">
-                <input
-                  type="text"
-                  className="border rounded-l px-3 py-2 text-sm flex-grow min-w-[150px] focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  placeholder="New category name"
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                />
-                <div className="flex">
-                  <button 
-                    type="submit"
-                    className="bg-green-500 text-white px-3 py-2 text-sm rounded-l"
-                  >
-                    Add
-                  </button>
-                  <button 
-                    type="button"
-                    className="bg-gray-300 text-gray-700 px-3 py-2 text-sm rounded-r"
-                    onClick={() => setIsAddingCategory(false)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <button 
-                className="bg-purple-500 text-white px-3 py-2 rounded text-sm"
-                onClick={() => setIsAddingCategory(true)}
-              >
-                New Category
-              </button>
-            )}
           </div>
         </div>
         
@@ -491,6 +574,8 @@ const Budget = () => {
                       options={categoryOptions}
                       isClearable={true}
                       placeholder="Select category"
+                      menuPortalTarget={document.body}
+                      menuPlacement="auto"
                       value={transaction.category_id
                         ? { value: transaction.category_id, label: transaction.category_name }
                         : null
@@ -530,7 +615,11 @@ const Budget = () => {
                           backgroundColor: document.documentElement.classList.contains('dark') 
                             ? 'rgb(31, 41, 55)' 
                             : 'white',
-                          zIndex: 50,
+                          zIndex: 9999,
+                        }),
+                        menuPortal: (base) => ({
+                          ...base,
+                          zIndex: 9999
                         }),
                         option: (base, state) => ({
                           ...base,
@@ -584,6 +673,8 @@ const Budget = () => {
                           options={categoryOptions}
                           isClearable={true}
                           placeholder="Select category"
+                          menuPortalTarget={document.body}
+                          menuPlacement="auto"
                           value={transaction.category_id
                             ? { value: transaction.category_id, label: transaction.category_name }
                             : null
@@ -623,7 +714,11 @@ const Budget = () => {
                               backgroundColor: document.documentElement.classList.contains('dark') 
                                 ? 'rgb(31, 41, 55)' 
                                 : 'white',
-                              zIndex: 50,
+                              zIndex: 9999,
+                            }),
+                            menuPortal: (base) => ({
+                              ...base,
+                              zIndex: 9999
                             }),
                             option: (base, state) => ({
                               ...base,
@@ -652,6 +747,64 @@ const Budget = () => {
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+      {/* Category Management Section */}
+      <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden mb-6">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Categories</h2>
+          
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            {isAddingCategory ? (
+              <form onSubmit={handleAddCategory} className="flex flex-wrap items-center gap-2">
+                <input
+                  type="text"
+                  className="border rounded-l px-3 py-2 text-sm flex-grow min-w-[150px] focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="New category name"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                />
+                <div className="flex">
+                  <button 
+                    type="submit"
+                    className="bg-green-500 text-white px-3 py-2 text-sm rounded-l"
+                  >
+                    Add
+                  </button>
+                  <button 
+                    type="button"
+                    className="bg-gray-300 text-gray-700 px-3 py-2 text-sm rounded-r"
+                    onClick={() => setIsAddingCategory(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <button 
+                className="bg-purple-500 text-white px-3 py-2 rounded text-sm"
+                onClick={() => setIsAddingCategory(true)}
+              >
+                Add New Category
+              </button>
+            )}
+          </div>
+          
+          {categories.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              {categories.map(category => (
+                <div key={category.id} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{category.name}</span>
+                  <button 
+                    onClick={() => openEditCategoryModal(category)}
+                    className="text-blue-500 hover:text-blue-700 text-sm"
+                  >
+                    Edit
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

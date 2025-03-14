@@ -17,6 +17,11 @@ type NewCategoryRequest struct {
 	Name string `json:"name"`
 }
 
+type EditCategoryRequest struct {
+	CategoryID int    `json:"category_id"`
+	Name       string `json:"name"`
+}
+
 type BulkImportRequest struct {
 	Transactions []models.BulkTransaction `json:"transactions"`
 }
@@ -144,6 +149,50 @@ func CreateBudgetCategory(db *sql.DB) echo.HandlerFunc {
 		}
 
 		return c.JSON(http.StatusCreated, category)
+	}
+}
+
+// EditBudgetCategory updates an existing budget category
+func EditBudgetCategory(db *sql.DB) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// Get user ID from session
+		userID, err := getUserIDFromSession(c, db)
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
+		}
+
+		// Parse request
+		var req EditCategoryRequest
+		if err := c.Bind(&req); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
+		}
+
+		// Validate
+		if req.Name == "" {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Category name cannot be empty"})
+		}
+
+		// Update category
+		err = models.UpdateBudgetCategory(db, req.CategoryID, userID, req.Name)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return c.JSON(http.StatusNotFound, map[string]string{"error": "Category not found or doesn't belong to user"})
+			}
+			// Check if it's a duplicate (unique constraint violation)
+			if err.Error() == "UNIQUE constraint failed: budget_categories.user_id, budget_categories.name" {
+				return c.JSON(http.StatusBadRequest, map[string]string{"error": "Category name already exists"})
+			}
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update category"})
+		}
+
+		// Return the updated category
+		category := models.BudgetCategory{
+			ID:     req.CategoryID,
+			UserID: userID,
+			Name:   req.Name,
+		}
+
+		return c.JSON(http.StatusOK, category)
 	}
 }
 
