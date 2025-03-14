@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Select from 'react-select';
@@ -14,6 +14,10 @@ const Budget = () => {
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  
+  // For date navigation
+  const [currentDate, setCurrentDate] = useState(null);
+  const [availableDates, setAvailableDates] = useState([]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -43,8 +47,17 @@ const Budget = () => {
       if (response.ok) {
         const data = await response.json();
         
-        // Update transactions state
+        // Set all transactions
         setTransactions(data);
+        
+        // Extract unique dates from transactions and sort them
+        const uniqueDates = [...new Set(data.map(t => t.date))].sort();
+        setAvailableDates(uniqueDates);
+        
+        // If no currentDate is set or it's not in the available dates, use the latest date
+        if (!currentDate || !uniqueDates.includes(currentDate)) {
+          setCurrentDate(uniqueDates.length > 0 ? uniqueDates[0] : null);
+        }
       } else {
         setError('Failed to fetch transactions');
       }
@@ -193,6 +206,28 @@ const Budget = () => {
     const [year, month, day] = dateStr.split('-');
     return `${month}/${day}/${year}`;
   };
+  
+  // Navigate to previous day
+  const goToPreviousDay = () => {
+    const currentIndex = availableDates.findIndex(date => date === currentDate);
+    if (currentIndex > 0) {
+      setCurrentDate(availableDates[currentIndex - 1]);
+    }
+  };
+  
+  // Navigate to next day
+  const goToNextDay = () => {
+    const currentIndex = availableDates.findIndex(date => date === currentDate);
+    if (currentIndex < availableDates.length - 1) {
+      setCurrentDate(availableDates[currentIndex + 1]);
+    }
+  };
+  
+  // Filter transactions for current date
+  const currentDayTransactions = useMemo(() => {
+    if (!currentDate) return [];
+    return transactions.filter(transaction => transaction.date === currentDate);
+  }, [transactions, currentDate]);
 
   if (loading) {
     return (
@@ -220,7 +255,38 @@ const Budget = () => {
       
       <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden mb-6">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Transactions</h2>
+          <div className="flex items-center">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Transactions</h2>
+            {currentDate && (
+              <div className="ml-4 flex items-center">
+                <button 
+                  onClick={goToPreviousDay}
+                  disabled={availableDates.indexOf(currentDate) <= 0}
+                  className={`px-2 py-1 rounded text-sm mr-2 ${
+                    availableDates.indexOf(currentDate) <= 0
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                  }`}
+                >
+                  ← Previous Day
+                </button>
+                <span className="text-sm font-medium px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">
+                  {formatDate(currentDate)}
+                </span>
+                <button 
+                  onClick={goToNextDay}
+                  disabled={availableDates.indexOf(currentDate) >= availableDates.length - 1}
+                  className={`px-2 py-1 rounded text-sm ml-2 ${
+                    availableDates.indexOf(currentDate) >= availableDates.length - 1
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                  }`}
+                >
+                  Next Day →
+                </button>
+              </div>
+            )}
+          </div>
           
           <div>
             {isAddingCategory ? (
@@ -268,7 +334,7 @@ const Budget = () => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {transactions.map((transaction) => (
+              {currentDayTransactions.map((transaction) => (
                 <tr key={transaction.id} data-transaction-id={transaction.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                     {formatDate(transaction.date)}
@@ -348,10 +414,10 @@ const Budget = () => {
                   </td>
                 </tr>
               ))}
-              {transactions.length === 0 && (
+              {currentDayTransactions.length === 0 && (
                 <tr>
                   <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                    No transactions found
+                    No transactions found for {formatDate(currentDate)}
                   </td>
                 </tr>
               )}
