@@ -28,15 +28,29 @@
           <p class="t-section-desc">These are a collection of popular apps we've re-written from scratch via vibing.</p>
         </section>
         
-        {{if .User}}
-        <a href="/apps/book"> 
-        {{else}}
-        <a href="/login"> 
-        {{end}}
-        <section class="flex items-center justify-center gap-4">
-          <img src="https://i.imgur.com/QsipM8h.png" class="w-20 rounded-lg" /> <span class="text-lg font-medium">Book</span>
-        </section>
-        </a>
+        <div class="w-full max-w-md mx-auto">
+          <!-- Book App -->
+          {{if .User}}
+          <a href="/apps/book"> 
+          {{else}}
+          <a href="/login"> 
+          {{end}}
+          <section class="flex items-center gap-4 mb-6">
+            <img src="https://i.imgur.com/QsipM8h.png" class="w-20 rounded-lg" /> <span class="text-lg font-medium">Book</span>
+          </section>
+          </a>
+
+          <!-- Budget App -->
+          {{if .User}}
+          <a href="/apps/budget"> 
+          {{else}}
+          <a href="/login"> 
+          {{end}}
+          <section class="flex items-center gap-4">
+            <img src="https://i.imgur.com/KE6fIhb.png" class="w-20 rounded-lg" /> <span class="text-lg font-medium">Budget</span>
+          </section>
+          </a>
+        </div>
       </div>
     </main>
 

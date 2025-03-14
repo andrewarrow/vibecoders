@@ -14,6 +14,7 @@ import UserProfile from './pages/UserProfile';
 import Forum from './pages/Forum';
 import ForumPost from './pages/ForumPost';
 import NewPost from './pages/NewPost';
+import Budget from './pages/Budget';
 import Admin from './pages/Admin';
 import AdminEditUser from './pages/AdminEditUser';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -53,6 +54,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                 />
               </Route>
               
+              {/* Apps Routes */}
+              <Route path="apps">
+                <Route path="budget" element={
+                  <ProtectedRoute>
+                    <Budget />
+                  </ProtectedRoute>
+                } />
+              </Route>
+
               {/* Admin Routes */}
               <Route path="admin" element={<AdminRoute />}>
                 <Route index element={<Admin />} />

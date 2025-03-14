@@ -116,6 +116,12 @@ func main() {
 	api.GET("/forum/:id", handlers.GetForumPostHandler(db))
 	api.POST("/forum/:id/comments", handlers.CreateForumCommentHandler(db))
 	api.POST("/forum/:id/vote", handlers.VoteForumPostHandler(db))
+	
+	// Budget routes
+	api.GET("/budget/transactions", handlers.GetBudgetTransactions(db))
+	api.GET("/budget/categories", handlers.GetBudgetCategories(db))
+	api.POST("/budget/categories", handlers.CreateBudgetCategory(db))
+	api.PUT("/budget/transactions/category", handlers.UpdateTransactionCategory(db))
 
 	// Admin API routes with admin middleware
 	adminMiddleware := handlers.IsAdmin(db)
@@ -188,6 +194,10 @@ func main() {
 	e.GET("/forum/new", serveSPA)
 	e.GET("/admin", serveSPA)
 	e.GET("/admin/*", serveSPA)
+	
+	// Apps routes
+	e.GET("/apps/book", serveSPA)
+	e.GET("/apps/budget", serveSPA)
 
 	// Serve static assets
 	e.GET("/*", echo.WrapHandler(http.StripPrefix("/", assetHandler)))
