@@ -18,6 +18,11 @@ const Budget = () => {
   // For date navigation
   const [currentDate, setCurrentDate] = useState(null);
   const [availableDates, setAvailableDates] = useState([]);
+  
+  // For bulk import modal
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importData, setImportData] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -207,6 +212,14 @@ const Budget = () => {
     return `${month}/${day}/${year}`;
   };
   
+  // Parse date from MM/DD/YYYY to YYYY-MM-DD
+  const parseDate = (dateStr) => {
+    if (!dateStr) return '';
+    
+    const [month, day, year] = dateStr.split('/');
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  };
+  
   // Navigate to previous day
   const goToPreviousDay = () => {
     const currentIndex = availableDates.findIndex(date => date === currentDate);
@@ -220,6 +233,77 @@ const Budget = () => {
     const currentIndex = availableDates.findIndex(date => date === currentDate);
     if (currentIndex < availableDates.length - 1) {
       setCurrentDate(availableDates[currentIndex + 1]);
+    }
+  };
+  
+  // Handle bulk import of transactions
+  const handleImport = async () => {
+    if (!importData.trim()) {
+      setError('Import data cannot be empty');
+      setTimeout(() => setError(''), 3000);
+      return;
+    }
+    
+    setIsImporting(true);
+    
+    try {
+      // Parse the import data
+      const lines = importData.trim().split('\n');
+      const parsedTransactions = [];
+      
+      // Process each line
+      for (const line of lines) {
+        // Try to match the format: "MM/DD/YYYY -amount description"
+        const match = line.match(/(\d{2}\/\d{2}\/\d{4})\s+(-?\d+\.\d{2})\s+(.+)/);
+        
+        if (match) {
+          const [, dateStr, amountStr, description] = match;
+          const amount = parseFloat(amountStr);
+          const formattedDate = parseDate(dateStr); // Convert to YYYY-MM-DD
+          
+          parsedTransactions.push({
+            date: formattedDate,
+            amount,
+            description: description.trim()
+          });
+        }
+      }
+      
+      if (parsedTransactions.length === 0) {
+        setError('No valid transactions found in the import data');
+        setIsImporting(false);
+        setTimeout(() => setError(''), 3000);
+        return;
+      }
+      
+      // Send parsed transactions to the server
+      const response = await fetch('/api/budget/transactions/bulk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ transactions: parsedTransactions }),
+      });
+      
+      if (response.ok) {
+        // Refresh transactions after import
+        await fetchTransactions();
+        setSuccess(`Successfully imported ${parsedTransactions.length} transactions`);
+        setImportData('');
+        setShowImportModal(false);
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        const errData = await response.json();
+        setError(errData.error || 'Failed to import transactions');
+        setTimeout(() => setError(''), 3000);
+      }
+    } catch (err) {
+      setError('An error occurred while importing transactions');
+      console.error(err);
+      setTimeout(() => setError(''), 3000);
+    } finally {
+      setIsImporting(false);
     }
   };
   
@@ -250,6 +334,56 @@ const Budget = () => {
       {success && (
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
           {success}
+        </div>
+      )}
+      
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-xl p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Add Day Data</h3>
+              <button 
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+                onClick={() => setShowImportModal(false)}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                Paste transaction data in the format:<br/>
+                <code className="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded">MM/DD/YYYY -amount Description</code>
+              </p>
+              <textarea
+                className="w-full h-64 border rounded p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                placeholder="03/10/2025 -577.76 Irs&#10;03/10/2025 -1.25 City Of Santa Moni&#10;..."
+                value={importData}
+                onChange={(e) => setImportData(e.target.value)}
+                disabled={isImporting}
+              ></textarea>
+            </div>
+            
+            <div className="flex justify-end">
+              <button
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm mr-2"
+                onClick={() => setShowImportModal(false)}
+                disabled={isImporting}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded text-sm"
+                onClick={handleImport}
+                disabled={isImporting}
+              >
+                {isImporting ? 'Importing...' : 'Import'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
       
@@ -288,7 +422,14 @@ const Budget = () => {
             )}
           </div>
           
-          <div>
+          <div className="flex items-center">
+            <button 
+              className="bg-green-500 text-white px-4 py-2 rounded text-sm mr-3"
+              onClick={() => setShowImportModal(true)}
+            >
+              Add Day Data
+            </button>
+            
             {isAddingCategory ? (
               <form onSubmit={handleAddCategory} className="flex items-center">
                 <input

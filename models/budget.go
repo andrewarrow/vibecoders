@@ -24,6 +24,13 @@ type BudgetTransaction struct {
 	CategoryName string `json:"category_name,omitempty"`
 }
 
+// BulkTransaction represents a transaction for bulk import
+type BulkTransaction struct {
+	Date        string  `json:"date"`
+	Amount      float64 `json:"amount"`
+	Description string  `json:"description"`
+}
+
 // GetBudgetCategories returns all categories for a user
 func GetBudgetCategories(db *sql.DB, userID int) ([]BudgetCategory, error) {
 	query := `SELECT id, user_id, name, created_at 
@@ -140,4 +147,37 @@ func UpdateTransactionCategory(db *sql.DB, transactionID, categoryID int, userID
 
 	_, err := db.Exec(query, args...)
 	return err
+}
+
+// BulkImportTransactions imports multiple transactions at once
+func BulkImportTransactions(db *sql.DB, userID int, transactions []BulkTransaction) (int, error) {
+	tx, err := db.Begin()
+	if err != nil {
+		return 0, err
+	}
+
+	stmt, err := tx.Prepare(`INSERT INTO budget_transactions (user_id, date, amount, description) 
+                          VALUES (?, ?, ?, ?)`)
+	if err != nil {
+		tx.Rollback()
+		return 0, err
+	}
+	defer stmt.Close()
+
+	count := 0
+	for _, transaction := range transactions {
+		// Insert each transaction
+		_, err := stmt.Exec(userID, transaction.Date, transaction.Amount, transaction.Description)
+		if err != nil {
+			tx.Rollback()
+			return 0, err
+		}
+		count++
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }

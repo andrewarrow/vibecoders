@@ -122,6 +122,7 @@ func main() {
 	api.GET("/budget/categories", handlers.GetBudgetCategories(db))
 	api.POST("/budget/categories", handlers.CreateBudgetCategory(db))
 	api.PUT("/budget/transactions/category", handlers.UpdateTransactionCategory(db))
+	api.POST("/budget/transactions/bulk", handlers.BulkImportTransactions(db))
 
 	// Admin API routes with admin middleware
 	adminMiddleware := handlers.IsAdmin(db)

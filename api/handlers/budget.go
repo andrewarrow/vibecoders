@@ -17,6 +17,10 @@ type NewCategoryRequest struct {
 	Name string `json:"name"`
 }
 
+type BulkImportRequest struct {
+	Transactions []models.BulkTransaction `json:"transactions"`
+}
+
 // getUserIDFromSession helper function gets the user ID from the session token
 func getUserIDFromSession(c echo.Context, db *sql.DB) (int, error) {
 	cookie, err := c.Cookie("session_token")
@@ -140,5 +144,39 @@ func CreateBudgetCategory(db *sql.DB) echo.HandlerFunc {
 		}
 
 		return c.JSON(http.StatusCreated, category)
+	}
+}
+
+// BulkImportTransactions imports multiple transactions at once
+func BulkImportTransactions(db *sql.DB) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// Get user ID from session
+		userID, err := getUserIDFromSession(c, db)
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
+		}
+
+		// Parse request
+		var req BulkImportRequest
+		if err := c.Bind(&req); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
+		}
+
+		// Validate
+		if len(req.Transactions) == 0 {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "No transactions to import"})
+		}
+
+		// Import transactions
+		count, err := models.BulkImportTransactions(db, userID, req.Transactions)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to import transactions"})
+		}
+
+		return c.JSON(http.StatusCreated, map[string]interface{}{
+			"status":  "success",
+			"message": "Successfully imported transactions",
+			"count":   count,
+		})
 	}
 }
