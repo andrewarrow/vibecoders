@@ -221,6 +221,163 @@ func GetPublicUserByUsername(db *sql.DB) echo.HandlerFunc {
 	}
 }
 
+// Magic link handlers
+type CreateMagicLinkRequest struct {
+	RedirectURL string `json:"redirect_url"`
+}
+
+func CreateMagicLink(db *sql.DB) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// Get user ID from session
+		cookie, err := c.Cookie("session_token")
+		if err != nil {
+			if err == http.ErrNoCookie {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Not logged in"})
+			}
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Server error"})
+		}
+
+		userID, err := models.GetUserIDByToken(db, cookie.Value)
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid session"})
+		}
+
+		// Parse request body to get redirect URL
+		var req CreateMagicLinkRequest
+		if err := c.Bind(&req); err != nil {
+			// If there's an error binding, just use default redirect
+			req.RedirectURL = "/"
+		}
+
+		// Create magic link with the specified redirect URL
+		magicLink, err := models.CreateMagicLink(db, userID, req.RedirectURL)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Could not create magic link"})
+		}
+
+		return c.JSON(http.StatusCreated, magicLink)
+	}
+}
+
+func GetUserMagicLinks(db *sql.DB) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// Get user ID from session
+		cookie, err := c.Cookie("session_token")
+		if err != nil {
+			if err == http.ErrNoCookie {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Not logged in"})
+			}
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Server error"})
+		}
+
+		userID, err := models.GetUserIDByToken(db, cookie.Value)
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid session"})
+		}
+
+		// Get user's magic links
+		links, err := models.GetUserMagicLinks(db, userID)
+		if err != nil {
+			// Return an empty array instead of null to avoid frontend errors
+			return c.JSON(http.StatusOK, []models.MagicLink{})
+		}
+
+		// If links is nil, return an empty array
+		if links == nil {
+			links = []models.MagicLink{}
+		}
+
+		return c.JSON(http.StatusOK, links)
+	}
+}
+
+func DeleteMagicLink(db *sql.DB) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// Get magic link ID from path
+		id := c.Param("id")
+		if id == "" {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Magic link ID is required"})
+		}
+
+		// Parse ID to int
+		linkID := 0
+		_, err := fmt.Sscanf(id, "%d", &linkID)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid magic link ID"})
+		}
+
+		// Get user ID from session
+		cookie, err := c.Cookie("session_token")
+		if err != nil {
+			if err == http.ErrNoCookie {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Not logged in"})
+			}
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Server error"})
+		}
+
+		userID, err := models.GetUserIDByToken(db, cookie.Value)
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid session"})
+		}
+
+		// Delete magic link
+		err = models.DeleteMagicLink(db, linkID, userID)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Could not delete magic link"})
+		}
+
+		return c.JSON(http.StatusOK, map[string]string{"message": "Magic link deleted successfully"})
+	}
+}
+
+func LoginWithMagicLink(db *sql.DB) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// Get token from path
+		token := c.Param("token")
+		if token == "" {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Magic link token is required"})
+		}
+
+		// Validate token
+		magicLink, err := models.GetMagicLinkByToken(db, token)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return c.JSON(http.StatusNotFound, map[string]string{"error": "Invalid or expired magic link"})
+			}
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Server error"})
+		}
+
+		// Create session
+		sessionToken, err := models.CreateSession(db, magicLink.UserID)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Could not create session"})
+		}
+
+		// Set cookie
+		cookie := new(http.Cookie)
+		cookie.Name = "session_token"
+		cookie.Value = sessionToken
+		cookie.Path = "/"
+		cookie.HttpOnly = true
+		c.SetCookie(cookie)
+
+		// Get user info
+		user, err := models.GetUserByID(db, magicLink.UserID)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Could not fetch user"})
+		}
+
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"message": "Login successful",
+			"user": map[string]interface{}{
+				"id":       user.ID,
+				"username": user.Username,
+			},
+			"redirect_url": magicLink.RedirectURL,
+		})
+	}
+}
+
 // sessionFromContext retrieves the session from the context cookie
 func sessionFromContext(c echo.Context) (*models.Session, error) {
 	cookie, err := c.Cookie("session_token")

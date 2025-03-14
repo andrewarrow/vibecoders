@@ -292,6 +292,109 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Magic link functions
+  const createMagicLink = async (redirectURL = '/') => {
+    try {
+      const response = await fetch('/api/magic-links', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ redirect_url: redirectURL }),
+      });
+      
+      // Always parse the response body first, before checking response.ok
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create magic link');
+      }
+      
+      return { success: true, magicLink: data };
+    } catch (error) {
+      console.error('Error in createMagicLink:', error);
+      return { success: false, error: error.message };
+    }
+  };
+  
+  const getUserMagicLinks = async () => {
+    try {
+      const response = await fetch('/api/magic-links');
+      
+      // Always parse the response body first, before checking response.ok
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch magic links');
+      }
+      
+      return { success: true, magicLinks: data };
+    } catch (error) {
+      console.error('Error in getUserMagicLinks:', error);
+      return { success: false, error: error.message };
+    }
+  };
+  
+  const deleteMagicLink = async (linkId) => {
+    try {
+      const response = await fetch(`/api/magic-links/${linkId}`, {
+        method: 'DELETE',
+      });
+      
+      let errorMessage = 'Failed to delete magic link';
+      
+      // Try to parse response if content exists
+      try {
+        const data = await response.json();
+        if (data && data.error) {
+          errorMessage = data.error;
+        }
+      } catch (e) {
+        // Ignore parsing errors, use default message
+      }
+      
+      if (!response.ok) {
+        throw new Error(errorMessage);
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error in deleteMagicLink:', error);
+      return { success: false, error: error.message };
+    }
+  };
+  
+  const loginWithMagicLink = async (token) => {
+    try {
+      const response = await fetch(`/api/magic/${token}`);
+      
+      // Always parse the response body first, before checking response.ok
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to login with magic link');
+      }
+      
+      // Store the redirect URL from the response
+      const redirectURL = data.redirect_url || '/';
+      
+      // Fetch the complete user data
+      const userResponse = await fetch('/api/user');
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        setUser(userData);
+        return { success: true, redirectURL };
+      } else {
+        const errorData = await userResponse.json();
+        throw new Error(errorData.error || 'Failed to get user data after login');
+      }
+    } catch (error) {
+      console.error('Error in loginWithMagicLink:', error);
+      setError(error.message);
+      return { success: false, error: error.message };
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -308,6 +411,10 @@ export const AuthProvider = ({ children }) => {
     createProject,
     updateProject,
     deleteProject,
+    createMagicLink,
+    getUserMagicLinks,
+    deleteMagicLink,
+    loginWithMagicLink,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

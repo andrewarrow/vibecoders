@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './index.css';
 
@@ -17,6 +18,9 @@ import NewPost from './pages/NewPost';
 import Budget from './pages/Budget';
 import Admin from './pages/Admin';
 import AdminEditUser from './pages/AdminEditUser';
+import MagicLink from './pages/MagicLink';
+import MagicLinksPage from './pages/MagicLinksPage';
+import TestPage from './pages/TestPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 
@@ -39,6 +43,18 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                 } 
               />
               <Route path="users/:username" element={<UserProfile />} />
+              <Route path="magic/:token" element={<MagicLink />} />
+              <Route 
+                path="magic-links" 
+                element={
+                  <ProtectedRoute>
+                    <MagicLinksPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Test Route */}
+              <Route path="test" element={<TestPage />} />
               
               {/* Forum Routes */}
               <Route path="forum">

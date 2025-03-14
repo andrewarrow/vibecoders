@@ -95,6 +95,12 @@ func main() {
 	api.GET("/homepage-users", handlers.GetHomepageUsers(db))
 	api.GET("/user", handlers.GetCurrentUser(db))
 	api.GET("/users/:username", handlers.GetPublicUserByUsername(db))
+	
+	// Magic link routes
+	api.POST("/magic-links", handlers.CreateMagicLink(db))
+	api.GET("/magic-links", handlers.GetUserMagicLinks(db))
+	api.DELETE("/magic-links/:id", handlers.DeleteMagicLink(db))
+	api.GET("/magic/:token", handlers.LoginWithMagicLink(db))
 
 	// Prompt routes
 	api.GET("/prompts", handlers.GetUserPrompts(db))
@@ -195,12 +201,18 @@ func main() {
 	e.GET("/forum/new", serveSPA)
 	e.GET("/admin", serveSPA)
 	e.GET("/admin/*", serveSPA)
+	e.GET("/magic/:token", serveSPA)
+	e.GET("/magic-links", serveSPA)
+	e.GET("/test", serveSPA)
 	
 	// Apps routes
 	e.GET("/apps/book", serveSPA)
 	e.GET("/apps/budget", serveSPA)
 
-	// Serve static assets
+	// Serve static assets - make sure paths are correctly handled
+	e.GET("/assets/*", echo.WrapHandler(http.StripPrefix("/", assetHandler)))
+	e.GET("/css/*", echo.WrapHandler(http.StripPrefix("/", assetHandler)))
+	e.GET("/img/*", echo.WrapHandler(http.StripPrefix("/", assetHandler)))
 	e.GET("/*", echo.WrapHandler(http.StripPrefix("/", assetHandler)))
 
 	// Start server

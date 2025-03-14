@@ -1,0 +1,1 @@
+ALTER TABLE magic_links ADD COLUMN redirect_url TEXT DEFAULT '/';
