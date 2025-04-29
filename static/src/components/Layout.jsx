@@ -17,7 +17,7 @@ const Layout = () => {
     <div className="min-h-screen flex flex-col">
       <header className="bg-gray-800 py-4 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold text-purple-500">VibeCoders</Link>
+          <Link to="/" className="text-2xl font-bold text-purple-500">andrewarrow.dev</Link>
           
           <nav className="flex space-x-4">
             <a href="/faq" className="text-gray-300 hover:text-white px-3 py-2 rounded-md">FAQ</a>
@@ -56,25 +56,9 @@ const Layout = () => {
       <footer className="bg-gray-800 py-6 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           <p className="text-center text-gray-400">
-            &copy; {new Date().getFullYear()} VibeCoders. All rights reserved.
+            &copy; {new Date().getFullYear()} andrewarrow.dev. All rights reserved.
           </p>
           <div className="flex justify-center space-x-12 mt-6">
-            <a href="https://aider.chat/" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center text-gray-400 hover:text-white">
-              <img src="/img/aider.png" alt="Aider" className="w-8 h-8 mb-2" />
-              <span>Aider</span>
-            </a>
-            <a href="https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center text-gray-400 hover:text-white">
-              <img src="/img/claude.png" alt="Claude Code" className="w-8 h-8 mb-2" />
-              <span>Claude Code</span>
-            </a>
-            <a href="https://www.cursor.com/" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center text-gray-400 hover:text-white">
-              <img src="/img/cursor.svg" alt="Cursor" className="w-8 h-8 mb-2" />
-              <span>Cursor</span>
-            </a>
-            <a href="https://cline.bot/" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center text-gray-400 hover:text-white">
-              <img src="/img/cline.png" alt="Cline" className="w-8 h-8 mb-2" />
-              <span>Cline</span>
-            </a>
           </div>
         </div>
       </footer>
